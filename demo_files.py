@@ -1,27 +1,62 @@
+# /home/rebekah/miniconda3/envs/stabil/bin/python /home/rebekah/stability/demo_files.py
+
 import xarray as xr
 import netCDF4
 import scipy.interpolate
 import timeit
 from os.path import basename, isfile
 from os import remove
-from datetime import datetime
+from datetime import datetime, timedelta
+
+import argparse
 
 import sharppy
 import sharppy.sharptab.profile as profile
-import sharppy.sharptab.interp as interp
-import sharppy.sharptab.winds as winds
-import sharppy.sharptab.utils as utils
 import sharppy.sharptab.params as params
 import sharppy.sharptab.thermo as thermo
 import sharppy.sharptab.fire as fire
 
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
 import numpy as np
-import pandas as pd
 import glob
-from io import StringIO
 import sys
+
+# --------------------
+parser = argparse.ArgumentParser()
+parser.add_argument('--date', type=str, required=False)
+parser.add_argument('--indir', type=str, required=False)
+parser.add_argument('--outdir', type=str, required=False)
+parser.add_argument('--casename', type=str, required=False)
+
+args = parser.parse_args()
+
+# Manual processing: format YYYYmmdd
+# search_day = '20210917'
+search_day = args.date
+indir = args.indir
+outdir = args.outdir
+casename = args.casename
+
+if (search_day == None):
+    # Cronjob processing:
+    search_day = datetime.now() - timedelta(days=1)
+    search_day = search_day.strftime("%Y%m%d")
+
+if (indir == None):
+    indir = 'data'
+
+if (outdir == None):
+    outdir = 'derived'
+
+ddir="/home/rebekah/stability/"+indir+"/"
+odir="/home/rebekah/stability/"+outdir+"/"
+
+if (casename != None):
+    ddir=ddir+casename+'/'
+    odir=odir+casename+'/'
+
+# --------------------
+
+print("demo_files.py: Processing: ", search_day, " in ", ddir )
 
 # NOTE: One day took ~ 3 hours (5s/file)
 
@@ -38,18 +73,6 @@ FILL_VAL = np.nan
 # Filler wind fields
 WDIR = np.repeat(0, 100)
 WSPD = np.repeat(0, 100)
-
-def create_2d_grid(grid_size):
-    coverage = [-180.0 , -90.0 , 180.0 , 90.0]
-
-    num_points_x = int((coverage[2] - coverage[0])/grid_size)
-    num_points_y = int((coverage[3] - coverage[1])/grid_size)
-
-    nx = complex(0, num_points_x)
-    ny = complex(0, num_points_y)
-
-    Xnew, Ynew = np.mgrid[coverage[0]:coverage[2]:nx, coverage[1]:coverage[3]:ny]
-    return Xnew, Ynew
 
 # Find the surface within a sounding
 def findSurface(pres, surfpres):
@@ -323,16 +346,22 @@ def calc_instability(pcl):
     cin_fov = pcl.bminus
     lclhght_fov = pcl.lclhght
 
-    hghtm10c_fov = pcl.hghtm10c
-    hghtm20c_fov = pcl.hghtm20c
-    hghtm30c_fov = pcl.hghtm30c
+    return cape_fov, cin_fov, lclhght_fov
 
+def calc_wetbulb(pcl):
     wm10c_fov = pcl.wm10c
     wm20c_fov = pcl.wm20c
     wm30c_fov = pcl.wm30c
 
-    return cape_fov, cin_fov, lclhght_fov, hghtm10c_fov, hghtm20c_fov, hghtm30c_fov, wm10c_fov, wm20c_fov, wm30c_fov
-#
+    return wm10c_fov, wm20c_fov, wm30c_fov
+
+def calc_heightC(pcl):
+    hghtm10c_fov = pcl.hghtm10c
+    hghtm20c_fov = pcl.hghtm20c
+    hghtm30c_fov = pcl.hghtm30c
+
+    return hghtm10c_fov, hghtm20c_fov, hghtm30c_fov
+
 # def clean_files(FILE):
 #     nc = xr.open_dataset(FILE, decode_times=False)
 #
@@ -354,9 +383,7 @@ def calc_instability(pcl):
 # -----------------------------------------
 start_all = timeit.default_timer()
 
-ddir="/home/rebekah/stability/data/"
-odir='/home/rebekah/stability/derived/'
-allfiles =  glob.glob(ddir+'/*.nc')
+allfiles =  glob.glob(ddir+'/*'+search_day+'*.nc')
 tot_files = len(allfiles)
 
 # Check if file already processed
@@ -368,12 +395,24 @@ for file in allfiles:
     else:
         files.append(file)
 
+# files = ['/home/rebekah/stability/NUCAPS-EDR_v2r0_npp_s20190430185959_e20190430190557_c20190430190557.nc']
+
+if len(files) == 0:
+    print("demo_files.py: No files found!")
 
 for i, FILE in enumerate(files):
     start = timeit.default_timer()
 
     fname =  basename(FILE)
-    oname = 'derived_'+fname.split('_')[3]
+
+    # To address minor differences in var/filenames
+    sat = 'noaa'
+    idt = 3 # loc of date in fname
+    if ('M01' in fname) or ('M02' in fname):
+        sat = 'iasi'
+        idt = 4 # loc of date in fname
+
+    oname = 'derived_'+fname.split('_')[idt]
 
     # mid-level stability parameters
     k_index=[]
@@ -392,37 +431,23 @@ for i, FILE in enumerate(files):
     mlcin=[]
 
     sfchghtm10c=[]
-    muhghtm10c=[]
-    mlhghtm10c=[]
-
     sfchghtm20c=[]
-    muhghtm20c=[]
-    mlhghtm20c=[]
-
     sfchghtm30c=[]
-    muhghtm30c=[]
-    mlhghtm30c=[]
 
     sfclclhght=[]
     mulclhght=[]
     mllclhght=[]
 
     sfcwm10c=[]
-    muwm10c=[]
-    mlwm10c=[]
-
     sfcwm20c=[]
-    muwm20c=[]
-    mlwm20c=[]
-
     sfcwm30c=[]
-    muwm30c=[]
-    mlwm30c=[]
 
-    print(i, '/', tot_files, 'Now processing file: ', fname)
+    precip_water=[]
+
+    print("demo_files.py: ", i, '/', tot_files, 'Now processing file: ', fname)
     s1 = timeit.default_timer()
 
-    nc = xr.open_dataset(FILE, decode_times=True)
+    nc = xr.open_dataset(FILE, decode_times=False)
 
     lats = nc.Latitude.values
     lons = nc.Longitude.values
@@ -430,14 +455,11 @@ for i, FILE in enumerate(files):
     ascend = nc.Ascending_Descending.values
     times = nc.Time.values
 
-    # Shouldn't be necessary if ordering data
-    # test = lats.mean()
-    # if (test > 70) | (test < -60):
-    #     print ("-- skipped: lat out of bounds")
-    #     continue
-
     temperature = np.array(nc.Temperature)
-    wvcd = np.array(nc.H2O)
+    try:
+        wvcd = np.array(nc.H2O)
+    except:
+        wvcd = np.array(nc.H2O_LCD)
     p_layer = np.array(nc.Effective_Pressure[0, :])
     plev = np.array(nc.Pressure[0, :])
     psurf = np.array(nc.Surface_Pressure)
@@ -467,44 +489,46 @@ for i, FILE in enumerate(files):
     for x in range(len(blmult_T_ALL)):
         blmult_T_ALL[x] = blmult_T_ALL[x] - 273.15
 
-    for i, FOR in enumerate(nc.Number_of_CrIS_FORs.values):
+
+    if sat == 'iasi':
+        for_vals = nc.Number_of_Dice.values
+    else:
+        for_vals = nc.Number_of_CrIS_FORs.values
+
+    for i, FOR in enumerate(for_vals):
         # print("Processing FOR", i)
 
-        # To speed up processing, skip the poles
-        # if (lats[i] > 70) | (lats[i] < -60):
-        #     k_index.append(FILL_VAL)
-        #     t_totals.append(FILL_VAL)
-        #     lapserate_700_500.append(FILL_VAL)
-        #     lapserate_850_500.append(FILL_VAL)
-        #     haines.append(FILL_VAL)
-        #     mlcape.append(FILL_VAL)
-        #     mlcin.append(FILL_VAL)
-        #     mlhghtm10c.append(FILL_VAL)
-        #     mlhghtm20c.append(FILL_VAL)
-        #     mlhghtm30c.append(FILL_VAL)
-        #     mllclhght.append(FILL_VAL)
-        #     mlwm10c.append(FILL_VAL)
-        #     mlwm20c.append(FILL_VAL)
-        #     mlwm30c.append(FILL_VAL)
-        #     mucape.append(FILL_VAL)
-        #     mucin.append(FILL_VAL)
-        #     muhghtm10c.append(FILL_VAL)
-        #     muhghtm20c.append(FILL_VAL)
-        #     muhghtm30c.append(FILL_VAL)
-        #     mulclhght.append(FILL_VAL)
-        #     muwm10c.append(FILL_VAL)
-        #     muwm20c.append(FILL_VAL)
-        #     muwm30c.append(FILL_VAL)
-        #     mlcape.append(FILL_VAL)
-        #     mlcin.append(FILL_VAL)
-        #     mlhghtm10c.append(FILL_VAL)
-        #     mlhghtm20c.append(FILL_VAL)
-        #     mlhghtm30c.append(FILL_VAL)
-        #     mllclhght.append(FILL_VAL)
-        #     mlwm10c.append(FILL_VAL)
-        #     mlwm20c.append(FILL_VAL)
-        #     mlwm30c.append(FILL_VAL)
-        #     continue
+        # To speed up processing, skip the poles, skip partial granules
+        if (lats[i] > 70) | (lats[i] < -60):
+            k_index.append(FILL_VAL)
+            t_totals.append(FILL_VAL)
+            lapserate_700_500.append(FILL_VAL)
+            lapserate_850_500.append(FILL_VAL)
+            haines.append(FILL_VAL)
+            #sfc
+            sfccape.append(FILL_VAL)
+            sfccin.append(FILL_VAL)
+            sfchghtm10c.append(FILL_VAL)
+            sfchghtm20c.append(FILL_VAL)
+            sfchghtm30c.append(FILL_VAL)
+            sfclclhght.append(FILL_VAL)
+            sfcwm10c.append(FILL_VAL)
+            sfcwm20c.append(FILL_VAL)
+            sfcwm30c.append(FILL_VAL)
+            #mu
+            mucape.append(FILL_VAL)
+            mucin.append(FILL_VAL)
+            mulclhght.append(FILL_VAL)
+
+            #ml
+            mlcape.append(FILL_VAL)
+            mlcin.append(FILL_VAL)
+
+            mllclhght.append(FILL_VAL)
+
+            # tpw
+            precip_water.append(FILL_VAL)
+            continue
 
         # Apply BLMULT
         temps = blmult_T_ALL[FOR]
@@ -526,6 +550,8 @@ for i, FILE in enumerate(files):
         k_index_fov = params.k_index(prof)
         t_totals_fov = params.t_totals(prof)
 
+        precip_water_fov = params.precip_water(prof)
+
         lapserate_700_500_fov = params.lapse_rate(prof, 700., 500., pres=True)
         lapserate_850_500_fov = params.lapse_rate(prof, 850., 500., pres=True)
 
@@ -542,6 +568,7 @@ for i, FILE in enumerate(files):
         t_totals.append(t_totals_fov)
         lapserate_700_500.append(lapserate_700_500_fov)
         lapserate_850_500.append(lapserate_850_500_fov)
+        precip_water.append(precip_water_fov)
         haines.append(haines_fov)
 
         # Calculate sfc, most unstable (mu), and mixed layer (ml) parcels
@@ -551,43 +578,37 @@ for i, FILE in enumerate(files):
         mlpcl = params.parcelx(prof, flag=4)
 
         #sfc
-        cape_fov, cin_fov, lclhght_fov, hghtm10c_fov, hghtm20c_fov, hghtm30c_fov, wm10c_fov, wm20c_fov, wm30c_fov = calc_instability(sfcpcl)
+        cape_fov, cin_fov, lclhght_fov = calc_instability(sfcpcl)
 
         sfccape.append(cape_fov)
         sfccin.append(cin_fov)
+        sfclclhght.append(lclhght_fov)
+
+        hghtm10c_fov, hghtm20c_fov, hghtm30c_fov = calc_heightC(sfcpcl)
+
         sfchghtm10c.append(hghtm10c_fov)
         sfchghtm20c.append(hghtm20c_fov)
         sfchghtm30c.append(hghtm30c_fov)
-        sfclclhght.append(lclhght_fov)
+
+        wm10c_fov, wm20c_fov, wm30c_fov = calc_wetbulb(sfcpcl)
+
         sfcwm10c.append(wm10c_fov)
         sfcwm20c.append(wm20c_fov)
         sfcwm30c.append(wm30c_fov)
 
         #mu
-        cape_fov, cin_fov, lclhght_fov, hghtm10c_fov, hghtm20c_fov, hghtm30c_fov, wm10c_fov, wm20c_fov, wm30c_fov = calc_instability(mupcl)
+        cape_fov, cin_fov, lclhght_fov = calc_instability(mupcl)
 
         mucape.append(cape_fov)
         mucin.append(cin_fov)
-        muhghtm10c.append(hghtm10c_fov)
-        muhghtm20c.append(hghtm20c_fov)
-        muhghtm30c.append(hghtm30c_fov)
         mulclhght.append(lclhght_fov)
-        muwm10c.append(wm10c_fov)
-        muwm20c.append(wm20c_fov)
-        muwm30c.append(wm30c_fov)
 
         #ml
-        cape_fov, cin_fov, lclhght_fov, hghtm10c_fov, hghtm20c_fov, hghtm30c_fov, wm10c_fov, wm20c_fov, wm30c_fov = calc_instability(mlpcl)
+        cape_fov, cin_fov, lclhght_fov = calc_instability(mlpcl)
 
         mlcape.append(cape_fov)
         mlcin.append(cin_fov)
-        mlhghtm10c.append(hghtm10c_fov)
-        mlhghtm20c.append(hghtm20c_fov)
-        mlhghtm30c.append(hghtm30c_fov)
         mllclhght.append(lclhght_fov)
-        mlwm10c.append(wm10c_fov)
-        mlwm20c.append(wm20c_fov)
-        mlwm30c.append(wm30c_fov)
 
     s2 = timeit.default_timer()
     print (s2-s1, "seconds")
@@ -598,17 +619,11 @@ for i, FILE in enumerate(files):
     lapserate_700_500=lapserate_700_500, lapserate_850_500=lapserate_850_500,
     sfccape=sfccape, mucape=mucape, mlcape=mlcape,
     sfccin=sfccin, mucin=mucin, mlcin=mlcin,
-    sfchghtm10c=sfchghtm10c, muhghtm10c=muhghtm10c, mlhghtm10c=mlhghtm10c,
-    sfchghtm20c=sfchghtm20c, muhghtm20c=muhghtm20c, mlhghtm20c=mlhghtm20c,
-    sfchghtm30c=sfchghtm30c, muhghtm30c=muhghtm30c, mlhghtm30c=mlhghtm30c,
     sfclclhght=sfclclhght, mulclhght=mulclhght, mllclhght=mllclhght,
-    sfcwm10c=sfcwm10c, muwm10c=muwm10c, mlwm10c=mlwm10c,
-    sfcwm20c=sfcwm20c, muwm20c=muwm20c, mlwm20c=mlwm20c,
-    sfcwm30c=sfcwm30c, muwm30c=muwm30c, mlwm30c=mlwm30c
+    sfchghtm10c=sfchghtm10c, sfchghtm20c=sfchghtm20c, sfchghtm30c=sfchghtm30c,
+    sfcwm10c=sfcwm10c, sfcwm20c=sfcwm20c, sfcwm30c=sfcwm30c,
+    precip_water=precip_water
     )
 
-    # stop = timeit.default_timer()
-    # print('-- File Done! Time: ', (stop - start)/60, " mins")
-
 stop = timeit.default_timer()
-print('All done! Time: ', (stop - start_all)/60, " mins")
+print('"demo_files.py: "All done! Time: ', (stop - start_all)/60, " mins")
