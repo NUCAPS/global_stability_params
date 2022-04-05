@@ -1,0 +1,23 @@
+var_name,long_name,standard_name,units,cbar_range_min,cbar_range_max,cmap
+qf,Quality Flag,quality_flag,1,0,1,RdYlGn_r
+k_index,K Index,atmosphere_stability_k_index,1,0,100,viridis
+t_totals,Total Totals,atmosphere_stability_total_totals_index,1,0,100,viridis
+haines,Haines Index,haines_index,1,2,6,viridis
+lapserate_700_500,Lapse Rate (700-500mb),air_temperature_lapse_rate,K m-1,0,12,viridis
+lapserate_850_500,Lapse Rate (850-500mb),air_temperature_lapse_rate,K m-1,0,12,viridis
+sfccape,Surface CAPE,atmosphere_convective_available_potential_energy_wrt_surface,J kg-1,0,5000,viridis
+mucape,Most Unstable CAPE,atmosphere_convective_available_potential_energy,J kg-1,0,5000,viridis
+mlcape,Mixed Layer CAPE,atmosphere_convective_available_potential_energy,J kg-1,0,5000,viridis
+sfccin,Surface CIN,atmosphere_convective_inhibition_wrt_surface,J kg-1,-500,0,viridis_r
+mucin,Most Unstable CIN,atmosphere_convective_inhibition,J kg-1,-500,0,viridis_r
+mlcin,Mixed Layer CIN,atmosphere_convective_inhibition,J kg-1,-500,0,viridis_r
+sfchghtm10c,Height value at -10C,height,m,0,10000,viridis
+sfchghtm20c,Height value at -20C,height,m,0,10000,viridis
+sfchghtm30c,Height value at -30C,height,m,0,10000,viridis
+sfclclhght,Surface Parcel LCL Height,atmosphere_lifting_condensation_level_wrt_surface,m,0,4000,viridis
+mulclhght,Most Unstable Parcel LCL Height,atmosphere_lifting_condensation_level,m,0,10000,viridis
+mllclhght,Mixed Layer Parcel LCL Height,atmosphere_lifting_condensation_level,m,0,4000,viridis
+sfcwm10c,Surface Wetbulb at -10C,wet_bulb_temperature,C,-10,300,viridis
+sfcwm20c,Surface Wetbulb at -20C,wet_bulb_temperature,C,-10,300,viridis
+sfcwm30c,Surface Wetbulb at -30C,wet_bulb_temperature,C,-10,300,viridis
+precip_water,Total Precipitable Water,total_precip_water,in,0,3,viridis
