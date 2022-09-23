@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 #declare -a orders=("3384362325" "3384362335" "3384362345")
-declare -a orders=("8177234890")
-savloc=/home/rebekah/stability/data_single/henri/
+declare -a orders=("8208707462")
+savloc=/home/rebekah/stability/data_single/tc-odette-j01/
 
 cd ${savloc}
 
