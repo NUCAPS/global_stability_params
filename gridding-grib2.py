@@ -19,15 +19,18 @@ import cartopy.feature as cfeature
 from pyresample.geometry import GridDefinition, AreaDefinition, SwathDefinition
 from pyresample import kd_tree
 import numpy.ma as ma
+from pathlib import Path
+
 
 plt.rcParams.update({'font.size': 22})
 hrrr_lons = [-134.09547973426314, -60.91719277183779]
 hrrr_lats = [21.13812300000003, 52.61565330680793]
+FILL_VAL = np.nan
 
 # --------
 indir = 'hrrr'
 outdir = 'gridded-hrrr'
-search_day = '2022-07-04'
+search_day = '2022-04-04'
 search_time = '19:00'
 fcst_time = 0
 #-------
@@ -124,7 +127,7 @@ def create_test_plot(x, y, z, oname):
     plt.savefig(plotdir + oname + '.png')
     plt.close()
 
-def grid_hrrr(ds)
+def grid_hrrr(ds):
     # Swath definition
     Y, X, xrout_dims = createGrid()
     grid_def = GridDefinition(lons=X, lats=Y)
@@ -151,13 +154,8 @@ def extract_file_date(fname):
     hr = fname[8:10]
     min = fname[10:12]
 
+    # Round down to nearest 15 min (avoids dealing with date changes)
     min_int = math.floor(int(min)/15)*15
-    # if min_int >= 60:
-    #     min_int = 45
-
-    # if min_int < 0:
-    #     min_int = 0
-
     min = str(min_int).zfill(2)
 
     return yr + '-' + mon + '-' + day + ' ' + hr + ':' + min
@@ -171,36 +169,102 @@ def epoch2datetime(etime):
 # metadata_file = "/home/rebekah/stability/metadata.csv"
 # metadata = pd.read_csv(metadata_file, sep=',', header=0)
 
-search_day = '20220704'
-ddir = 'derived/'
+# search_day = '20220704'
+ddir = 'derived/hwt_2022/'
 
 search_days = unique_yyyymmdd(ddir)
 
-for search_day in search_days:
+for iii, search_day in enumerate(search_days):
 
     files = sorted(glob.glob(ddir+"derived_*"+search_day+"*.npz"))
     search_datetimes = [extract_file_date(file.split('_s')[1][0:12]) for file in files]
 
-    df = pd.DataFrame(columns=['nucaps_lat', 'nucaps_lon', 'nucaps_cape', 'hrrr_lat', 'hrrr_lon', 'hrrr_cape', 'hrrr_time'])
     search_datetime_prev = ''
-    for ii, file in enumerate(files):
+    data=[]
+        
+        
+    print(iii, '/', len(search_days), " Processing: ", search_day)
 
-        print(ii, '/', len(files), " Processing: ", file)
+    for ii, file in enumerate(files):
+        outfile = 'hrrr_matches/hwt_2022/'+search_day+'-cape.csv'
+        # my_file=Path(outfile)
+        # if my_file.exists():
+        #     continue
+
+        print('-- ', ii, '/', len(files), " file: ", file)
         search_datetime = search_datetimes[ii]
 
-        lats = np.empty(0)
-        lons = np.empty(0)
-        cape = np.empty(0)
+        # lats = np.empty(0)
+        # lons = np.empty(0)
+        # capes = np.empty(0)
+
+        # cloud_fracs = np.empty(0)
+        # ampl_eta_finals = np.empty(0)
+        # Aeff_finals = np.empty(0)
+        # A0_clouds = np.empty(0)
+        # chi2_clouds = np.empty(0)
+        # chi2temps = np.empty(0)
+        # chi2watrs = np.empty(0)
+        # dof_temps = np.empty(0)
+        # dof_watrs = np.empty(0)
 
         npzfile = np.load(file)
-        lats = np.append(lats, npzfile['lat'])
-        lons = np.append(lons, npzfile['lon'])
-        capes = np.append(cape, npzfile['sfccape'])
+
+        # lats = np.append(lats, npzfile['lat'])
+        # lons = np.append(lons, npzfile['lon'])
+        # capes = np.append(capes, npzfile['sfccape'])
+
+        # # rspares
+        # cloud_frac = np.append(cloud_frac, npzfile['cloud_frac'])
+        # ampl_eta_final = np.append(ampl_eta_final, npzfile['ampl_eta_final'])
+        # Aeff_final = np.append(Aeff_final, npzfile['Aeff_final'])
+        # A0_cloud = np.append(A0_cloud, npzfile['A0_cloud'])
+        # chi2_cloud = np.append(chi2_cloud, npzfile['chi2_cloud'])
+        # chi2temp = np.append(chi2temp, npzfile['chi2temp'])
+        # chi2watr = np.append(chi2watr, npzfile['chi2watr'])
+        # dof_temp = np.append(dof_temp, npzfile['dof_temp'])
+        # dof_watr = np.append(dof_watr, npzfile['dof_watr'])
+
+        lats = npzfile['lat']
+        lons = npzfile['lon']
+        capes = npzfile['sfccape']
+
+        qfs = npzfile['sfccape']
+        view_angles = npzfile['view_angle']
+
+        # rspares
+        cloud_fracs = npzfile['cloud_frac']
+        ampl_eta_finals = npzfile['ampl_eta_final']
+        Aeff_finals = npzfile['Aeff_final']
+        A0_clouds = npzfile['A0_cloud']
+        chi2_clouds = npzfile['chi2_cloud']
+        chi2temps = npzfile['chi2temp']
+        chi2watrs = npzfile['chi2watr']
+        dof_temps = npzfile['dof_temp']
+        dof_watrs = npzfile['dof_watr']
 
         for i in range(0, len(lats)):
-            lat = lats[i]
-            lon = lons[i]
-            cape = capes[i]
+
+            try:
+                lat = lats[i]
+                lon = lons[i]
+                cape = capes[i]
+                qf = qfs[i]
+                view_angle = view_angles[i]
+                cloud_frac = cloud_fracs[0][i]
+                ampl_eta_final = ampl_eta_finals[0][i]
+                Aeff_final = Aeff_finals[0][i]
+                A0_cloud = A0_clouds[0][i]
+                chi2_cloud = chi2_clouds[0][i]
+                chi2temp = chi2temps[0][i]
+                chi2watr = chi2watrs[0][i]
+                dof_temp = dof_temps[0][i]
+                dof_watr = dof_watrs[0][i]
+            except:
+                break
+
+            if cape == FILL_VAL:
+                continue
 
             # Check if point in HRRR range
             in_bounds = (lon >= hrrr_lons[0]) & (lon <= hrrr_lons[1]) & (lat >= hrrr_lats[0]) & (lat <= hrrr_lats[1])
@@ -210,7 +274,7 @@ for search_day in search_days:
 
             # Only open file if it's not already open
             if (search_datetime_prev != search_datetime):
-                print(search_datetime_prev, search_datetime)
+                # print(search_datetime_prev, search_datetime)
                 ds = get_hrrr(search_datetime)
                 search_datetime_prev = search_datetime
 
@@ -218,8 +282,12 @@ for search_day in search_days:
             index = matchup_spatial(ds.latitude.values, ds.longitude.values, lat, lon, closest_only=True)
 
             if np.sum(index) > 0:
-                data = pd.DataFrame([{'hrrr_time': search_datetime, 'nucaps_lat' : lat, 'nucaps_lon' : lon, 'nucaps_cape' : cape, 'hrrr_lat': ds.latitude.values[index].item(), 'hrrr_lon' : ds.longitude.values[index].item(), 'hrrr_cape' : ds.cape.values[2,:,:,0][index].item() }])
 
-                df = pd.concat([df, data], ignore_index=True)
+                data.append([ search_datetime, lat, lon, cape, qf, view_angle, cloud_frac, ampl_eta_final, Aeff_final, A0_cloud, chi2_cloud, chi2temp, chi2watr, dof_temp, dof_watr, ds.latitude.values[index].item(), ds.longitude.values[index].item(), 
+                ds.cape.isel(step=0, pressureFromGroundLayer=0).values[index].item() ])
 
-    df.to_csv('hrrr_matches/'+search_day+'-cape.csv')
+    df = pd.DataFrame(data, columns=['hrrr_time', 'nucaps_lat', 'nucaps_lon', 'nucaps_cape', 'qf', 'view_angle', 'cloud_frac', 'ampl_eta_final', 'Aeff_final', 'A0_cloud', 'chi2_cloud', 'chi2temp', 'chi2watr', 'dof_temp', 'dof_watr', 'hrrr_lat', 'hrrr_lon', 'hrrr_cape'])
+
+    df.to_csv(outfile, index=False)
+
+# df = pd.read_csv(outfile)

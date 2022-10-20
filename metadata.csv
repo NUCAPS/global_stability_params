@@ -21,3 +21,12 @@ sfcwm10c,Surface Wetbulb at -10C,wet_bulb_temperature,C,-10,300,viridis
 sfcwm20c,Surface Wetbulb at -20C,wet_bulb_temperature,C,-10,300,viridis
 sfcwm30c,Surface Wetbulb at -30C,wet_bulb_temperature,C,-10,300,viridis
 precip_water,Total Precipitable Water,total_precip_water,in,0,3,viridis
+cloud_frac,cloud_frac,1,0,1,viridis_r
+ampl_eta_final,ampl_eta_final,1,0,100,viridis_r
+Aeff_final,Aeff_final,1,0,100,viridis_r
+A0_cloud,A0_cloud,1,0,100,viridis_r
+chi2_cloud,chi2_cloud,1,0,100,viridis_r
+chi2temp,chi2temp,1,0,100,viridis_r
+chi2watr,chi2watr,1,0,100,viridis_r
+dof_temp,dof_temp,1,0,7,viridis_r
+dof_watr,dof_watr,1,0,7,viridis_r

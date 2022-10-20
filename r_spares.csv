@@ -1,0 +1,92 @@
+index,name,label,description,description_nice
+1,olr,OLR,OLR,Olr
+2,colr,COLR,clear sky OLR,Clear Sky Olr
+3,etarej_end,Chi-Squared of Cloud Clearing,CC residual for last CC step. OLR [1] is the rejection threshold.,Cc Residual For Last Cc Step. Olr [1] Is The Rejection Threshold.
+4,cldfrc_tot,Total Cloud Fraction,cldfrctot @ end of retrieval,Cldfrctot @ End Of Retrieval
+5,cldfrc_500,CLDFRC 500,cldfrc(Pcld>500) @ end,Cldfrc(Pcld>500) @ End
+6,ampl_eta_final,AMPL ETA FINAL,noise amplification factor/final CC score | A0_cloud [16] is the rejection threshold.,Noise Amplification Factor/Final Cc Score | A0_Cloud [16] Is The Rejection Threshold.
+7,BTAMSU,BTAMSU,Predicting AMSU radiances | RMS(rad(IR.ret)-radobs()) for AMSU channels | colr [2] is the rejection threshold.,Predicting Amsu Radiances | Rms(Rad(Ir.Ret)-Radobs()) For Amsu Channels | Colr [2] Is The Rejection Threshold.
+8,dT,DT,Bad temperature profiles | RMS(T(p) f/IR ret - T(p) f/ AMSU.ret) | etarej_end[3] is the rejection threshold.,Bad Temperature Profiles | Rms(T(P) F/Ir Ret - T(P) F/ Amsu.Ret) | Etarej_End[3] Is The Rejection Threshold.
+9,qualsurf,QUALSURF,quality indicator for surface,Quality Indicator For Surface
+10,qualtemp,QUALTEMP,quality indicator for temp,Quality Indicator For Temp
+11,qualwatr,QUALWATR,quality indicator for water,Quality Indicator For Water
+12,softcode,SOFTCODE,software code rejection,Software Code Rejection
+13,noaamit,NOAAMIT,NOAA-MIT rejection test,Noaa-Mit Rejection Test
+14,Aeff_first,AEFF FIRST,Effective CC amplification factor (first CC step) | etarej_first [24] is the rejection threshold.,Effective Cc Amplification Factor (First Cc Step) | Etarej_First [24] Is The Rejection Threshold.
+15,Aeff_final,AEFF FINAL,Effective CC amplification factor (final CC step) | chi2_cloud [17] is the rejection threshold.,Effective Cc Amplification Factor (Final Cc Step) | Chi2_Cloud [17] Is The Rejection Threshold.
+16,A0_cloud,A0 CLOUD,intercept of alpha(1)=f(alpha(2)) fitting,Intercept Of Alpha(1)=F(Alpha(2)) Fitting
+17,chi2_cloud,CHI2 CLOUD,chi^2 of alpha(1)=f(alpha(2)) fitting,Chi^2 Of Alpha(1)=F(Alpha(2)) Fitting
+18,fzeta,FZETA,Estimate of the amount of cloud clearing | rzeta [19] is the rejection threshold. ,Estimate Of The Amount Of Cloud Clearing | Rzeta [19] Is The Rejection Threshold. 
+19,rzeta,RZETA,Estimate of the amount of cloud clearing due to multiple cloud formations | bias_ccdiff [20] is the rejection threshold.,Estimate Of The Amount Of Cloud Clearing Due To Multiple Cloud Formations | Bias_Ccdiff [20] Is The Rejection Threshold.
+20,bias_ccdiff,BIAS CCDIFF,BIAS(<R>-Rccr) in 800-900 cm-1 region,Bias(<R>-Rccr) In 800-900 Cm-1 Region
+21,lambda_max,LAMBDA MAX,lambda(2 iter_eta) = U^TS^TN^{-1}SU,Lambda(2 Iter_Eta) = U^Ts^Tn^{-1}Su
+22,totliqwat,TOTLIQWAT,TOTAL LIQ water (MIT),Total Liq Water (Mit)
+23,noaa_score,NOAA SCORE,principal component radiance reconstruction score,Principal Component Radiance Reconstruction Score
+24,etarej_first,ETAREJ FIRST,CC residual from first CC step. Used as rejection criteria for Aeff_first [24].,Cc Residual From First Cc Step. Used As Rejection Criteria For Aeff_First [24].
+25,ampl_first,AMPL FIRST,Noise amplification factor | Initial CC score.,Noise Amplification Factor | Initial Cc Score.
+26,cldfrc_1,CLDFRC 1,cloud fraction  eta step=1,Cloud Fraction  Eta Step=1
+27,cldfr5_1,CLDFR5 1,cloud fraction P>500  eta step=1,Cloud Fraction P>500  Eta Step=1
+28,num_zeta_eta1,NUM ZETA ETA1,float(sve_etatype(1))  number of zetas solved  eta step=1,Float(Sve_Etatype(1))  Number Of Zetas Solved  Eta Step=1
+29,cc_reid,CC REID,sve_erej(iter_eta) cloud clearing residual  last step,Sve_Erej(Iter_Eta) Cloud Clearing Residual  Last Step
+30,tsurf_noaa,TSURF NOAA,Tskin(NOAA) (used w/ rejthresh(30),Tskin(Noaa) (Used W/ Rejthresh(30)
+31,noaadifftst,NOAADIFFTST,NOAA diff test - clear indicator,Noaa Diff Test - Clear Indicator
+32,num_zeta_end,NUM ZETA END,float(sve_etatype(numETAstep))  # of zetas solved @ end,Float(Sve_Etatype(Numetastep))  # Of Zetas Solved @ End
+33,qual_o3,QUAL O3,quality indicator for o3,Quality Indicator For O3
+34,lammax_o3,LAMMAX O3,maximum eigenvalue for o3 retr.,Maximum Eigenvalue For O3 Retr.
+35,qual_co,QUAL CO,quality indicator for co,Quality Indicator For Co
+36,lammax_co,LAMMAX CO,maximum eigenvalue for co retr.,Maximum Eigenvalue For Co Retr.
+37,qual_ch4,QUAL CH4,quality indicator for ch4,Quality Indicator For Ch4
+38,lammax_ch4,LAMMAX CH4,maximum eigenvalue for ch4 retr.,Maximum Eigenvalue For Ch4 Retr.
+39,qual_co2,QUAL CO2,quality indicator for co2,Quality Indicator For Co2
+40,lammax_co2,LAMMAX CO2,maximum eigenvalue for co2 retr.,Maximum Eigenvalue For Co2 Retr.
+41,u10mps,U10MPS,forecast wind u direction,Forecast Wind U Direction
+42,v10mps,V10MPS,forecast wind v direction,Forecast Wind V Direction
+43,lambda_max_11,LAMBDA MAX 11,lambda(1 iter_eta) = U^TS^TNEDN^{-2}SU,Lambda(1 Iter_Eta) = U^Ts^Tnedn^{-2}Su
+44,fov_dbtmax,FOV DBTMAX,spectral clear indicator (not for IASI),Spectral Clear Indicator (Not For Iasi)
+45,qual_hno3,QUAL HNO3,quality indicator for hno3,Quality Indicator For Hno3
+46,lammax_hno3,LAMMAX HNO3,maximum eigenvalue for hno3 retr.,Maximum Eigenvalue For Hno3 Retr.
+47,qual_n2o,QUAL N2O,quality indicator for n2o,Quality Indicator For N2O
+48,lammax_n2o,LAMMAX N2O,maximum eigenvalue for n2o retr.,Maximum Eigenvalue For N2O Retr.
+49,qual_so2,QUAL SO2,quality indicator for so2,Quality Indicator For So2
+50,lammax_so2,LAMMAX SO2,maximum eigenvalue for so2 retr.,Maximum Eigenvalue For So2 Retr.
+51,rmsamsu_7,RMSAMSU 7,RET-REG predictfor f/Joels QA,Ret-Reg Predictfor F/Joels Qa
+52,abs_tsurf_tskin,ABS TSURF TSKIN, ABS(Tsurfret-Tskinfs)  RET-MIT predict for f/Joels QA, Abs(Tsurfret-Tskinfs)  Ret-Mit Predict For F/Joels Qa
+53,chi2temp,Chi-Square Temperature,obs-cal residual for temperature retrieval,Obs-Cal Residual For Temperature Retrieval
+54,chi2watr,Chi-Square Water Vapor,obs-cal residual for water vapor retrieval,Obs-Cal Residual For Water Vapor Retrieval
+55,chi2_o3,CHI2 O3,obs-cal residual for o3 retrieval,Obs-Cal Residual For O3 Retrieval
+56,chi2_co2,CHI2 CO2,obs-cal residual for co2 retrieval,Obs-Cal Residual For Co2 Retrieval
+57,chi2_ch4,CHI2 CH4,obs-cal residual for ch4 retrieval,Obs-Cal Residual For Ch4 Retrieval
+58,chi2_co,CHI2 CO,obs-cal residual for co retrieval,Obs-Cal Residual For Co Retrieval
+59,chi2_n2o,CHI2 N2O,obs-cal residual for n2o retrieval,Obs-Cal Residual For N2O Retrieval
+60,chi2_hno3,CHI2 HNO3,obs-cal residual for hno3 retrieval,Obs-Cal Residual For Hno3 Retrieval
+61,chi2_so2,CHI2 SO2,obs-cal residual for so2 retrieval,Obs-Cal Residual For So2 Retrieval
+62,chi2amsu,CHI2AMSU,obs-cal residual for AMSU retrieval,Obs-Cal Residual For Amsu Retrieval
+63,empty_63,EMPTY 63,empty,Empty
+64,chi2surf,CHI2SURF,obs-cal residual for surface retrieval,Obs-Cal Residual For Surface Retrieval
+65,dof_amsu,DOF AMSU,degrees of freedom in AMSU step,Degrees Of Freedom In Amsu Step
+66,dof_mhs,DOF MHS,degrees of freedom in MHS step,Degrees Of Freedom In Mhs Step
+67,dof_cld,DOF CLD,degrees of freedom in cloud step,Degrees Of Freedom In Cloud Step
+68,dof_surf,DOF SURF,degrees of freedom in surface step,Degrees Of Freedom In Surface Step
+69,dof_temp,DOF Temperature,degrees of freedom in temperature step,Degrees Of Freedom In Temperature Step
+70,dof_watr,DOF Water Vapor,degrees of freedom in water vapor step,Degrees Of Freedom In Water Vapor Step
+71,dof_o3,DOF O3,degrees of freedom in o3 step,Degrees Of Freedom In O3 Step
+72,dof_co2,DOF CO2,degrees of freedom in co2 step,Degrees Of Freedom In Co2 Step
+73,dof_ch4,DOF CH4,degrees of freedom in ch4 step,Degrees Of Freedom In Ch4 Step
+74,dof_co,DOF CO,degrees of freedom in co step,Degrees Of Freedom In Co Step
+75,dof_n2o,DOF N2O,degrees of freedom in n2o step,Degrees Of Freedom In N2O Step
+76,dof_hno3,DOF HNO3,degrees of freedom in hno3 step,Degrees Of Freedom In Hno3 Step
+77,dof_so2,DOF SO2,degrees of freedom in so2 step,Degrees Of Freedom In So2 Step
+78,ak_11,AK 11,fovret_ak(1 1),Fovret_Ak(1 1)
+79,ak_12,AK 12,fovret_ak(1 2),Fovret_Ak(1 2)
+80,ak_21,AK 21,fovret_ak(2 1),Fovret_Ak(2 1)
+81,ak_22,AK 22,fovret_ak(2 2),Fovret_Ak(2 2)
+82,iis_qa_params_1,IIS QA PARAMS 1,warmest 5% on IASI FOV,Warmest 5% On Iasi Fov
+83,iis_qa_params_2,IIS QA PARAMS 2,contrast of IIS on all IASI FOVs,Contrast Of Iis On All Iasi Fovs
+84,iis_qa_params_3,IIS QA PARAMS 3,warmest of all IIS pixels,Warmest Of All Iis Pixels
+85,iis_qa_params_4,IIS QA PARAMS 4,warmest on IASI FOVs,Warmest On Iasi Fovs
+86,iis_qa_params_5,IIS QA PARAMS 5,dang.dist fov 1,Dang.Dist Fov 1
+87,iis_qa_params_6,IIS QA PARAMS 6,dang.dist fov 2,Dang.Dist Fov 2
+88,iis_qa_params_7,IIS QA PARAMS 7,dang.dist fov 3,Dang.Dist Fov 3
+89,iis_qa_params_8,IIS QA PARAMS 8,dang.dist fov 4,Dang.Dist Fov 4
+90,iis_qa_params_9,IIS QA PARAMS 9,CCR on IIS SRF - iis_qa(3),Ccr On Iis Srf - Iis_Qa(3)
+91,iis_qa_params_10,IIS QA PARAMS 10,CCR on IIS SRF - iis_qa(4),Ccr On Iis Srf - Iis_Qa(4)

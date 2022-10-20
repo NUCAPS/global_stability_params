@@ -20,6 +20,9 @@ import numpy as np
 import glob
 import sys
 
+hrrr_lons = [-134.09547973426314, -60.91719277183779]
+hrrr_lats = [21.13812300000003, 52.61565330680793]
+
 # --------------------
 parser = argparse.ArgumentParser()
 parser.add_argument('--date', type=str, required=False)
@@ -51,7 +54,8 @@ ddir="/home/rebekah/stability/"+indir+"/"
 odir="/home/rebekah/stability/"+outdir+"/"
 
 if (casename != None):
-    ddir=ddir+casename+'/'
+    # ddir=ddir+casename+'/'
+    ddir=indir
     odir=odir+casename+'/'
 
 # --------------------
@@ -444,16 +448,57 @@ for i, FILE in enumerate(files):
 
     precip_water=[]
 
+    cloud_frac = []
+    ampl_eta_final = []
+    Aeff_final = []
+    A0_cloud = []
+    chi2_cloud = []
+    chi2temp = []
+    chi2watr = []
+    dof_temp = []
+    dof_watr = []
+
     print("demo_files.py: ", i, '/', tot_files, 'Now processing file: ', fname)
     s1 = timeit.default_timer()
+
+    # files = glob.glob('/mnt/nucaps-s3/stability/*.nc')
+    # FILE = files[0]
+
+    # nc.Rspare_Field.sel(Number_of_Rspares=0).sel(Number_of_CrIS_FORs=0).item()
+    # r_spares = pd.read_csv('r_spares.csv')
+    # r_spare_names = [ampl_eta_final, Aeff_final, A0_cloud, chi2_cloud, chi2temp, chi2watr, dof_temp, dof_watr]
+    # r_spares_idx = [4, 6, 15, 16, 17, 53, 54, 69, 70]
+    # for idx in r_spares_idx:
+    #   nc.Rspare_Field.sel(Number_of_Rspares=idx).values
 
     nc = xr.open_dataset(FILE, decode_times=False)
 
     lats = nc.Latitude.values
     lons = nc.Longitude.values
     qf = nc.Quality_Flag.values
+    view_angle = nc.View_Angle.values
     ascend = nc.Ascending_Descending.values
     times = nc.Time.values
+
+    # extract r-spare values (index-1 ... bc fortran)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=3).values
+    cloud_frac.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=5).values
+    ampl_eta_final.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=14).values
+    Aeff_final.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=15).values
+    A0_cloud.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=16).values
+    chi2_cloud.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=52).values
+    chi2temp.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=53).values
+    chi2watr.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=68).values
+    dof_temp.append(tmp_rspare)
+    tmp_rspare = nc.Rspare_Field.sel(Number_of_Rspares=69).values
+    dof_watr.append(tmp_rspare)
 
     temperature = np.array(nc.Temperature)
     try:
@@ -489,7 +534,6 @@ for i, FILE in enumerate(files):
     for x in range(len(blmult_T_ALL)):
         blmult_T_ALL[x] = blmult_T_ALL[x] - 273.15
 
-
     if sat == 'iasi':
         for_vals = nc.Number_of_Dice.values
     else:
@@ -499,7 +543,10 @@ for i, FILE in enumerate(files):
         # print("Processing FOR", i)
 
         # To speed up processing, skip the poles, skip partial granules
-        if (lats[i] > 70) | (lats[i] < -60):
+        in_bounds = (lons[i] >= hrrr_lons[0]) & (lons[i] <= hrrr_lons[1]) & (lats[i] >= hrrr_lats[0]) & (lats[i] <= hrrr_lats[1])
+
+        if ~in_bounds:
+          # if (lats[i] > 70) | (lats[i] < -60):
             k_index.append(FILL_VAL)
             t_totals.append(FILL_VAL)
             lapserate_700_500.append(FILL_VAL)
@@ -528,6 +575,17 @@ for i, FILE in enumerate(files):
 
             # tpw
             precip_water.append(FILL_VAL)
+
+            # rspares
+            # cloud_frac.append(FILL_VAL)
+            # ampl_eta_final.append(FILL_VAL)
+            # Aeff_final.append(FILL_VAL)
+            # A0_cloud.append(FILL_VAL)
+            # chi2_cloud.append(FILL_VAL)
+            # chi2temp.append(FILL_VAL)
+            # chi2watr.append(FILL_VAL)
+            # dof_temp.append(FILL_VAL)
+            # dof_watr.append(FILL_VAL)
             continue
 
         # Apply BLMULT
@@ -547,35 +605,43 @@ for i, FILE in enumerate(files):
         prof = profile.create_profile(profile='default', pres=LEVEL, hght=HGHT, tmpc=TEMP, dwpc=DWPT, wspd=WSPD[:len(TEMP)], wdir=WDIR[:len(TEMP)], FILL_VAL=FILL_VAL, strictQC=False)
 
         # Calculate mid-level stability parameters
-        k_index_fov = params.k_index(prof)
-        t_totals_fov = params.t_totals(prof)
+        # k_index_fov = params.k_index(prof)
+        # t_totals_fov = params.t_totals(prof)
 
-        precip_water_fov = params.precip_water(prof)
+        # precip_water_fov = params.precip_water(prof)
 
         lapserate_700_500_fov = params.lapse_rate(prof, 700., 500., pres=True)
         lapserate_850_500_fov = params.lapse_rate(prof, 850., 500., pres=True)
 
         # Haines
-        topo = topography[i]
-        if topo > 914:
-            haines_fov = fire.haines_high(prof)
-        elif topo < 305:
-            haines_fov = fire.haines_low(prof)
-        else:
-            haines_fov = fire.haines_mid(prof)
+        # topo = topography[i]
+        # if topo > 914:
+        #     haines_fov = fire.haines_high(prof)
+        # elif topo < 305:
+        #     haines_fov = fire.haines_low(prof)
+        # else:
+        #     haines_fov = fire.haines_mid(prof)
+        
+        # k_index.append(k_index_fov)
+        # t_totals.append(t_totals_fov)
+        # lapserate_700_500.append(lapserate_700_500_fov)
+        # lapserate_850_500.append(lapserate_850_500_fov)
+        # precip_water.append(precip_water_fov)
+        # haines.append(haines_fov)
 
-        k_index.append(k_index_fov)
-        t_totals.append(t_totals_fov)
+        k_index.append(FILL_VAL)
+        t_totals.append(FILL_VAL)
         lapserate_700_500.append(lapserate_700_500_fov)
         lapserate_850_500.append(lapserate_850_500_fov)
-        precip_water.append(precip_water_fov)
-        haines.append(haines_fov)
+        precip_water.append(FILL_VAL)
+        haines.append(FILL_VAL)
+
 
         # Calculate sfc, most unstable (mu), and mixed layer (ml) parcels
         # Slowest step: 0.20817320235073566 s
         sfcpcl = params.parcelx(prof, flag=1)
-        mupcl = params.parcelx(prof, flag=3)
-        mlpcl = params.parcelx(prof, flag=4)
+        # mupcl = params.parcelx(prof, flag=3)
+        # mlpcl = params.parcelx(prof, flag=4)
 
         #sfc
         cape_fov, cin_fov, lclhght_fov = calc_instability(sfcpcl)
@@ -584,37 +650,53 @@ for i, FILE in enumerate(files):
         sfccin.append(cin_fov)
         sfclclhght.append(lclhght_fov)
 
-        hghtm10c_fov, hghtm20c_fov, hghtm30c_fov = calc_heightC(sfcpcl)
+        # hghtm10c_fov, hghtm20c_fov, hghtm30c_fov = calc_heightC(sfcpcl)
 
-        sfchghtm10c.append(hghtm10c_fov)
-        sfchghtm20c.append(hghtm20c_fov)
-        sfchghtm30c.append(hghtm30c_fov)
+        # sfchghtm10c.append(hghtm10c_fov)
+        # sfchghtm20c.append(hghtm20c_fov)
+        # sfchghtm30c.append(hghtm30c_fov)
 
-        wm10c_fov, wm20c_fov, wm30c_fov = calc_wetbulb(sfcpcl)
+        sfchghtm10c.append(FILL_VAL)
+        sfchghtm20c.append(FILL_VAL)
+        sfchghtm30c.append(FILL_VAL)
 
-        sfcwm10c.append(wm10c_fov)
-        sfcwm20c.append(wm20c_fov)
-        sfcwm30c.append(wm30c_fov)
+        # wm10c_fov, wm20c_fov, wm30c_fov = calc_wetbulb(sfcpcl)
+
+        # sfcwm10c.append(wm10c_fov)
+        # sfcwm20c.append(wm20c_fov)
+        # sfcwm30c.append(wm30c_fov)
+
+        sfcwm10c.append(FILL_VAL)
+        sfcwm20c.append(FILL_VAL)
+        sfcwm30c.append(FILL_VAL)
 
         #mu
-        cape_fov, cin_fov, lclhght_fov = calc_instability(mupcl)
+        # cape_fov, cin_fov, lclhght_fov = calc_instability(mupcl)
 
-        mucape.append(cape_fov)
-        mucin.append(cin_fov)
-        mulclhght.append(lclhght_fov)
+        # mucape.append(cape_fov)
+        # mucin.append(cin_fov)
+        # mulclhght.append(lclhght_fov)
+
+        mucape.append(FILL_VAL)
+        mucin.append(FILL_VAL)
+        mulclhght.append(FILL_VAL)
 
         #ml
-        cape_fov, cin_fov, lclhght_fov = calc_instability(mlpcl)
+        # cape_fov, cin_fov, lclhght_fov = calc_instability(mlpcl)
 
-        mlcape.append(cape_fov)
-        mlcin.append(cin_fov)
-        mllclhght.append(lclhght_fov)
+        # mlcape.append(cape_fov)
+        # mlcin.append(cin_fov)
+        # mllclhght.append(lclhght_fov)
+
+        mlcape.append(FILL_VAL)
+        mlcin.append(FILL_VAL)
+        mllclhght.append(FILL_VAL)
 
     s2 = timeit.default_timer()
     print (s2-s1, "seconds")
 
     np.savez(odir+oname,
-    lat=lats, lon=lons, times=times, qf=qf, ascend=ascend,
+    lat=lats, lon=lons, times=times, qf=qf, view_angle=view_angle, ascend=ascend,
     k_index=k_index, t_totals=t_totals, haines=haines,
     lapserate_700_500=lapserate_700_500, lapserate_850_500=lapserate_850_500,
     sfccape=sfccape, mucape=mucape, mlcape=mlcape,
@@ -622,7 +704,16 @@ for i, FILE in enumerate(files):
     sfclclhght=sfclclhght, mulclhght=mulclhght, mllclhght=mllclhght,
     sfchghtm10c=sfchghtm10c, sfchghtm20c=sfchghtm20c, sfchghtm30c=sfchghtm30c,
     sfcwm10c=sfcwm10c, sfcwm20c=sfcwm20c, sfcwm30c=sfcwm30c,
-    precip_water=precip_water
+    precip_water=precip_water,
+    cloud_frac = cloud_frac,
+    ampl_eta_final = ampl_eta_final,
+    Aeff_final = Aeff_final,
+    A0_cloud = A0_cloud,
+    chi2_cloud = chi2_cloud,
+    chi2temp = chi2temp,
+    chi2watr = chi2watr,
+    dof_temp = dof_temp,
+    dof_watr = dof_watr
     )
 
 stop = timeit.default_timer()
