@@ -182,7 +182,6 @@ for iii, search_day in enumerate(search_days):
     search_datetime_prev = ''
     data=[]
         
-        
     print(iii, '/', len(search_days), " Processing: ", search_day)
 
     for ii, file in enumerate(files):
@@ -229,7 +228,7 @@ for iii, search_day in enumerate(search_days):
         lons = npzfile['lon']
         capes = npzfile['sfccape']
 
-        qfs = npzfile['sfccape']
+        qfs = npzfile['qf']
         view_angles = npzfile['view_angle']
 
         # rspares
