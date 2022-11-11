@@ -193,36 +193,7 @@ for iii, search_day in enumerate(search_days):
         print('-- ', ii, '/', len(files), " file: ", file)
         search_datetime = search_datetimes[ii]
 
-        # lats = np.empty(0)
-        # lons = np.empty(0)
-        # capes = np.empty(0)
-
-        # cloud_fracs = np.empty(0)
-        # ampl_eta_finals = np.empty(0)
-        # Aeff_finals = np.empty(0)
-        # A0_clouds = np.empty(0)
-        # chi2_clouds = np.empty(0)
-        # chi2temps = np.empty(0)
-        # chi2watrs = np.empty(0)
-        # dof_temps = np.empty(0)
-        # dof_watrs = np.empty(0)
-
         npzfile = np.load(file)
-
-        # lats = np.append(lats, npzfile['lat'])
-        # lons = np.append(lons, npzfile['lon'])
-        # capes = np.append(capes, npzfile['sfccape'])
-
-        # # rspares
-        # cloud_frac = np.append(cloud_frac, npzfile['cloud_frac'])
-        # ampl_eta_final = np.append(ampl_eta_final, npzfile['ampl_eta_final'])
-        # Aeff_final = np.append(Aeff_final, npzfile['Aeff_final'])
-        # A0_cloud = np.append(A0_cloud, npzfile['A0_cloud'])
-        # chi2_cloud = np.append(chi2_cloud, npzfile['chi2_cloud'])
-        # chi2temp = np.append(chi2temp, npzfile['chi2temp'])
-        # chi2watr = np.append(chi2watr, npzfile['chi2watr'])
-        # dof_temp = np.append(dof_temp, npzfile['dof_temp'])
-        # dof_watr = np.append(dof_watr, npzfile['dof_watr'])
 
         lats = npzfile['lat']
         lons = npzfile['lon']
