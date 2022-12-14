@@ -21,7 +21,6 @@ from pyresample import kd_tree
 import numpy.ma as ma
 from pathlib import Path
 
-
 plt.rcParams.update({'font.size': 22})
 hrrr_lons = [-134.09547973426314, -60.91719277183779]
 hrrr_lats = [21.13812300000003, 52.61565330680793]
@@ -95,13 +94,25 @@ def createGrid():
     return Y, X, xrout_dims
 
 # -----------------------------
-def get_hrrr(search_datetime, fcst_time=0, var="CAPE"):
-    # syntax: H = Herbie("2022-06-07 16:00", model="hrrr", product="sfc", fxx=0)
+def get_hrrr(search_datetime, fcst_time=0, var='CAPE:surface:anl'):
+    # syntax: H = Herbie("2022-06-07 16:00", model="hrrr", product="prs", fxx=0)
     # ds.longitude, ds.latitude, ds.cape.values[2,:,:,0]
     # https://blaylockbk.github.io/Herbie/_build/html/user_guide/notebooks/tutorial.html?highlight=product
+#  |  product : {'sfc', 'prs', 'nat', 'subh'}
+#  |      Output variable product file type. If not specified, will
+#  |      use first product in model template file. CASE SENSITIVE.
+#  |      For example, the HRRR model has these products:
+#  |      - ``'sfc'`` surface fields
+#  |      - ``'prs'`` pressure fields
+#  |      - ``'nat'`` native fields
+#  |      - ``'subh'`` subhourly fields
 
     H = Herbie(search_datetime, model="hrrr", product="sfc", fxx=fcst_time)
-    # np.unique(H.read_idx().variable)
+    # np.unique(H.read_idx())
+    # Search variable can be looked up using the index-1 from this website:
+    # https://www.nco.ncep.noaa.gov/pmb/products/hrrr/hrrr.t00z.wrfsfcf00.grib2.shtml
+    # check using:
+    # idx.loc[104]
     ds = H.xarray(var)
 
     mask = (ds.longitude > 180)
@@ -121,11 +132,13 @@ def create_test_plot(x, y, z, oname):
     plt.figure(figsize=[16,16])
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.add_feature(cfeature.COASTLINE)
-    p = ax.pcolormesh(x, y, z, transform=ccrs.PlateCarree(), vmin=0, vmax=10000)
+    p = ax.pcolormesh(x, y, z, transform=ccrs.PlateCarree(), vmin=0, vmax=500)
     plt.colorbar(p, orientation="horizontal", pad=0.05)
     ax.set_extent(img_extent)
-    plt.savefig(plotdir + oname + '.png')
+    plt.savefig(oname + '.png')
     plt.close()
+
+# create_test_plot(ds.longitude.values, ds.latitude.values, ds.cape.isel(step=0)[:,:,2], 'cape-p2')
 
 def grid_hrrr(ds):
     # Swath definition
@@ -254,7 +267,8 @@ for iii, search_day in enumerate(search_days):
             if np.sum(index) > 0:
 
                 data.append([ search_datetime, lat, lon, cape, qf, view_angle, cloud_frac, ampl_eta_final, Aeff_final, A0_cloud, chi2_cloud, chi2temp, chi2watr, dof_temp, dof_watr, ds.latitude.values[index].item(), ds.longitude.values[index].item(), 
-                ds.cape.isel(step=0, pressureFromGroundLayer=0).values[index].item() ])
+                # ds.cape.isel(step=0, pressureFromGroundLayer=2).values[index].item() ])
+                ds.cape.values[index].item() ])
 
     df = pd.DataFrame(data, columns=['hrrr_time', 'nucaps_lat', 'nucaps_lon', 'nucaps_cape', 'qf', 'view_angle', 'cloud_frac', 'ampl_eta_final', 'Aeff_final', 'A0_cloud', 'chi2_cloud', 'chi2temp', 'chi2watr', 'dof_temp', 'dof_watr', 'hrrr_lat', 'hrrr_lon', 'hrrr_cape'])
 

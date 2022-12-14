@@ -1,0 +1,10 @@
+        .vscode/*
+        *.nc
+        data/*
+        data_single/*
+        derived/*
+        gridded/*
+        hrrr_matches/*
+        lost+found/*
+        plots/*
+        sfc_vals/*

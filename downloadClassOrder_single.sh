@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#declare -a orders=("3384362325" "3384362335" "3384362345")
-declare -a orders=("8208707462")
+# declare -a orders=("3384362325" "3384362335" "3384362345")
+declare -a orders=("8218205537")
 savloc=/home/rebekah/stability/data_single/tc-odette-j01/
 
 cd ${savloc}

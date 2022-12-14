@@ -103,6 +103,7 @@ def get_botlev_blmult(plev, psurf, nobs):
         denom = plev[surflev] - plev[surflev - 1]
         blmult[i] = num / denom
         botlev[i] = surflev
+
     return blmult, botlev
 
 # Calculate surface water vapor column density using BLMULT

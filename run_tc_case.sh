@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-declare -a dates=$(seq 20220501 20220830)
+declare -a dates=$(seq 20220501 20220630)
 # dates+=$(seq 20210917 20210924)
 
-# declare -a casenames=("tc-henri-m01" "tc-henri-m02" "tc-odette-m01" "tc-odette-m02")
 declare -a casenames=("hwt_2022")
 
 for casename in ${casenames[@]}; do
 # create intermediate file dirs
-  cd /home/rebekah/stability/derived
+  cd /home/rebekah/stability/sfc_vals
   mkdir $casename
   cd /home/rebekah/stability/gridded
   mkdir $casename
@@ -16,10 +15,10 @@ for casename in ${casenames[@]}; do
 
   # Calc derived fields
   for date in ${dates[@]}; do
-    python demo_files.py --date "${date}" --casename "${casename}" --indir '/mnt/nucaps-s3/stability/'
+    # python demo_files.py --date "${date}" --casename "${casename}" --indir '/mnt/nucaps-s3/stability/' --outdir 'sfc_vals'
+    python surface_temps.py --date "${date}" --casename "${casename}" --indir '/mnt/nucaps-s3/stability/' --outdir 'sfc_vals'
   done
 done
-
 
 # Calc gridded files
 # for casename in ${casenames[@]}; do
